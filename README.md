@@ -7,7 +7,6 @@
 [![Flask](https://img.shields.io/badge/Flask-3.x-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![FAISS](https://img.shields.io/badge/Vector%20DB-FAISS%20CPU-00599C?style=for-the-badge&logo=meta&logoColor=white)](https://github.com/facebookresearch/faiss)
 [![Google Gemini](https://img.shields.io/badge/Google%20GenAI-Gemini%20API-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
 <br/>
 
@@ -41,7 +40,6 @@
 - [📤 Export Options (CSV & JSON)](#-export-options-csv--json)
 - [🔒 Security & Safe Execution Policy](#-security--safe-execution-policy)
 - [📂 Project Directory Tree](#-project-directory-tree)
-- [📜 License](#-license)
 
 ---
 
@@ -499,7 +497,3 @@ AI-Test-Case-Generator/
 │
 └── exports/                       # Target directory for exported test artifacts
 ```
-
----
-
-
