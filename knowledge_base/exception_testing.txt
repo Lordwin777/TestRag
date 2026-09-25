@@ -1,0 +1,51 @@
+Concept Name: Exception Testing (Fault Injection and Error Propagation)
+
+Definition:
+Exception testing validates that software properly anticipates, catches, handles, and propagates runtime errors, bad inputs, resource unavailability, and anomalous execution states through formal exception handling mechanisms (such as try/except/finally in Python or try/catch/finally in Java/C++). It verifies that exceptions are informative, clean up resources, and never crash the process uncaught.
+
+When to Use It:
+- Whenever code contains `try`, `except`, `catch`, `throw`, `raise`, or `finally` blocks.
+- When operations can fail unpredictably (e.g. file I/O, network sockets, database connections, type casting).
+- In functions that explicitly raise exceptions on contract violations (e.g. `raise ValueError("Invalid range")`).
+
+Important Rules:
+1. Verify that expected exceptions are raised when specified invalid arguments are supplied.
+2. Ensure caught exceptions do not swallow errors silently without logging or appropriate notification.
+3. Test that `finally` blocks and context managers (`with` statements) release resources (close files, release locks) regardless of whether an exception occurred.
+4. Verify exception messages are informative and do not expose sensitive infrastructure details (passwords, connection strings).
+
+Examples:
+- Attempting to convert string "abc" to int in an integer parser raises `ValueError`.
+- Opening a non-existent file path `/fake/path/data.json` raises `FileNotFoundError`.
+- Dividing by zero in a mathematical formula raises `ZeroDivisionError`.
+
+Example Test Cases:
+- ID: TC_EXC_001
+  Function: calculate_discount
+  Title: Verify TypeError raised when non-numeric string passed as price
+  Test Type: Exception
+  Input: {"price": "one hundred", "discount": 10}
+  Preconditions: Function expects numeric arguments
+  Steps: ["Invoke calculate_discount('one hundred', 10)", "Assert TypeError is raised or handled"]
+  Expected Result: "TypeError or validation message 'Expected numeric price'"
+  Priority: High
+  Severity: High
+  Reason: Confirms invalid parameter types do not lead to unhandled internal crashes.
+
+- ID: TC_EXC_002
+  Function: read_config_file
+  Title: Handle missing file without application termination
+  Test Type: Exception
+  Input: {"file_path": "/invalid/nonexistent_config.yaml"}
+  Preconditions: File system does not contain target file
+  Steps: ["Call read_config_file('/invalid/nonexistent_config.yaml')"]
+  Expected Result: "FileNotFoundError handled with default configuration returned"
+  Priority: High
+  Severity: Critical
+  Reason: Verifies graceful fallback and resource management upon I/O failure.
+
+Guidance for Generating Test Cases:
+1. Identify all `raise` or `throw` statements and determine which input triggers them.
+2. Identify external calls (file, network, parsing) wrapped in `try/except`.
+3. Generate tests providing inputs that trigger each explicit exception clause.
+4. Verify both the exception type and the descriptive error message.

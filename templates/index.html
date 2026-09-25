@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Test Case Generator | RAG-Powered Testing Assistant</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="brand-title">AI Test Case Generator</h1>
+                    <p class="brand-subtitle">RAG-Powered Source Code Testing Assistant</p>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="header-badges">
+                    <div id="vector-status-badge" class="status-pill status-loading" title="FAISS Vector Store Status">
+                        <span class="status-dot"></span>
+                        <span id="vector-status-text">Checking FAISS Store...</span>
+                    </div>
+                    <div id="gemini-status-badge" class="status-pill status-loading" title="LLM Backend Status">
+                        <span class="status-dot"></span>
+                        <span id="gemini-status-text">Checking API...</span>
+                    </div>
+                </div>
+
+                <!-- Theme Toggle Button -->
+                <button type="button" id="theme-toggle-btn" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle light/dark theme" title="Toggle Light/Dark Theme">
+                    <span class="theme-icon-sun" id="theme-icon-sun">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                    </span>
+                    <span class="theme-icon-moon" id="theme-icon-moon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </span>
+                    <span id="theme-label" class="theme-label">Dark</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-layout">
+        <!-- Input & Configuration Column -->
+        <section class="panel input-panel" id="editor-section">
+            <div class="panel-header">
+                <div>
+                    <h2>Source Code & Testing Configuration</h2>
+                    <p class="panel-subtitle">Select language, configure test requirements, and paste your code</p>
+                </div>
+                <div class="sample-loaders">
+                    <span class="sample-label">Quick Presets:</span>
+                    <button type="button" class="btn-sm btn-outline" onclick="loadSample('discount')">Discount Calc</button>
+                    <button type="button" class="btn-sm btn-outline" onclick="loadSample('auth')">User Auth</button>
+                    <button type="button" class="btn-sm btn-outline" onclick="loadSample('array')">Array Search</button>
+                    <button type="button" class="btn-sm btn-outline text-muted" onclick="clearCode()">Clear</button>
+                </div>
+            </div>
+
+            <form id="generate-form" onsubmit="handleGenerate(event)">
+                <!-- Controls Row -->
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label for="language-select">Programming Language</label>
+                        <select id="language-select" name="language" class="form-control" onchange="updateLanguageMode()">
+                            <option value="Python" selected>Python (AST Parser)</option>
+                            <option value="Java">Java</option>
+                            <option value="JavaScript">JavaScript</option>
+                            <option value="C++">C++</option>
+                            <option value="C">C</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group flex-1">
+                        <label for="test-type-select">Target Test Type</label>
+                        <select id="test-type-select" name="test_type" class="form-control">
+                            <option value="All" selected>All Categories (Full Suite)</option>
+                            <option value="Functional">Functional Testing</option>
+                            <option value="Positive">Positive (Happy Path)</option>
+                            <option value="Negative">Negative (Error Handling)</option>
+                            <option value="Boundary">Boundary Value Analysis (BVA)</option>
+                            <option value="Edge Case">Edge Case Testing</option>
+                            <option value="Exception">Exception Testing</option>
+                            <option value="Security">Security Testing (Defensive)</option>
+                            <option value="Branch/Logic">Branch & Logic Coverage</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group flex-sm">
+                        <label for="num-cases-input">Test Cases</label>
+                        <input type="number" id="num-cases-input" name="number_of_test_cases" class="form-control" min="1" max="25" value="10">
+                    </div>
+                </div>
+
+                <!-- Code Editor Area -->
+                <div class="form-group">
+                    <div class="code-editor-header">
+                        <div class="editor-header-left">
+                            <span class="editor-dot red"></span>
+                            <span class="editor-dot yellow"></span>
+                            <span class="editor-dot green"></span>
+                            <span id="code-lang-indicator" class="editor-indicator">python</span>
+                        </div>
+                        <div class="editor-header-right">
+                            <span class="editor-hint">Press <kbd>Ctrl+Enter</kbd> to run</span>
+                            <span id="char-counter" class="editor-stats">0 characters</span>
+                        </div>
+                    </div>
+                    <textarea 
+                        id="code-input" 
+                        name="code" 
+                        class="code-textarea" 
+                        rows="12" 
+                        placeholder="Paste your source code here to analyze and generate test cases..."
+                        required
+                        spellcheck="false"
+                        oninput="updateCharCount()"
+                        onkeydown="handleTextareaKeydown(event)"></textarea>
+                </div>
+
+                <!-- Action Button -->
+                <div class="form-actions">
+                    <button type="submit" id="btn-submit" class="btn btn-primary btn-lg">
+                        <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                        <span class="btn-text">Generate Test Cases (RAG + AI)</span>
+                        <div class="spinner" id="btn-spinner" style="display: none;"></div>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Pipeline Execution Stepper -->
+        <div id="pipeline-stepper" class="pipeline-stepper" style="display: none;">
+            <div class="step-card" id="step-1">
+                <div class="step-num">1</div>
+                <div class="step-info"><span class="step-title">Preprocessing</span><span class="step-desc">Input Sanitization</span></div>
+            </div>
+            <div class="step-arrow">&rarr;</div>
+            <div class="step-card" id="step-2">
+                <div class="step-num">2</div>
+                <div class="step-info"><span class="step-title">AST Analysis</span><span class="step-desc">Logic & Boundaries</span></div>
+            </div>
+            <div class="step-arrow">&rarr;</div>
+            <div class="step-card" id="step-3">
+                <div class="step-num">3</div>
+                <div class="step-info"><span class="step-title">Query Synthesis</span><span class="step-desc">Query Embedding</span></div>
+            </div>
+            <div class="step-arrow">&rarr;</div>
+            <div class="step-card" id="step-4">
+                <div class="step-num">4</div>
+                <div class="step-info"><span class="step-title">FAISS Search</span><span class="step-desc">Top-K Knowledge</span></div>
+            </div>
+            <div class="step-arrow">&rarr;</div>
+            <div class="step-card" id="step-5">
+                <div class="step-num">5</div>
+                <div class="step-info"><span class="step-title">RAG Prompt</span><span class="step-desc">Gemini Generation</span></div>
+            </div>
+        </div>
+
+        <!-- Notification Banner -->
+        <div id="alert-banner" class="alert-banner" style="display: none;"></div>
+
+        <!-- Results Section (Hidden until generated) -->
+        <div id="results-container" class="results-container" style="display: none;">
+            
+            <!-- Sticky Results Navigation & Quick Jump Bar -->
+            <nav class="results-nav-bar" id="results-nav-bar">
+                <div class="results-nav-tabs">
+                    <button type="button" class="tab-btn active" id="tab-btn-cases" onclick="switchResultsTab('cases')">
+                        <span class="tab-icon">📋</span>
+                        <span class="tab-title">Test Cases</span>
+                        <span class="tab-badge" id="tab-badge-cases">0</span>
+                    </button>
+                    <button type="button" class="tab-btn" id="tab-btn-rag" onclick="switchResultsTab('rag')">
+                        <span class="tab-icon">🔍</span>
+                        <span class="tab-title">RAG Knowledge</span>
+                        <span class="tab-badge" id="tab-badge-rag">0</span>
+                    </button>
+                    <button type="button" class="tab-btn" id="tab-btn-ast" onclick="switchResultsTab('ast')">
+                        <span class="tab-icon">⚙️</span>
+                        <span class="tab-title">AST Code Analysis</span>
+                        <span class="tab-badge" id="tab-badge-ast">Ready</span>
+                    </button>
+                    <button type="button" class="tab-btn" id="tab-btn-all" onclick="switchResultsTab('all')">
+                        <span class="tab-icon">📑</span>
+                        <span class="tab-title">Full View</span>
+                    </button>
+                </div>
+
+                <div class="results-nav-actions">
+                    <button type="button" class="btn-nav-jump" onclick="scrollToEditor()" title="Scroll back up to edit code">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="19" x2="12" y2="5"></line>
+                            <polyline points="5 12 12 5 19 12"></polyline>
+                        </svg>
+                        Edit Code
+                    </button>
+                </div>
+            </nav>
+
+            <!-- TAB PANE 1: Generated Test Cases Panel -->
+            <section class="panel testcases-panel tab-content" id="pane-testcases">
+                <div class="panel-header testcases-header">
+                    <div>
+                        <h2>Generated Test Cases</h2>
+                        <p class="panel-subtitle" id="tc-source-note">Strictly grounded in source code + retrieved testing concepts</p>
+                    </div>
+                    <!-- View Toggle & Export Buttons -->
+                    <div class="export-actions">
+                        <div class="view-toggle-group">
+                            <button type="button" class="btn-toggle active" id="view-cards-btn" onclick="setViewMode('cards')" title="Card View">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                                Cards
+                            </button>
+                            <button type="button" class="btn-toggle" id="view-table-btn" onclick="setViewMode('table')" title="Compact Table View">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                                Table
+                            </button>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary" onclick="copyTestCasesJSON()">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            Copy JSON
+                        </button>
+                        <button type="button" class="btn btn-outline-success" onclick="exportData('csv')">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            CSV
+                        </button>
+                        <button type="button" class="btn btn-outline-info" onclick="exportData('json')">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            JSON
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Test Cases Filter & Search Bar -->
+                <div class="filter-bar">
+                    <div class="filter-item">
+                        <label for="filter-type">Type:</label>
+                        <select id="filter-type" class="filter-select" onchange="applyFilters()">
+                            <option value="All">All Types</option>
+                            <option value="Positive">Positive</option>
+                            <option value="Negative">Negative</option>
+                            <option value="Boundary">Boundary</option>
+                            <option value="Edge Case">Edge Case</option>
+                            <option value="Exception">Exception</option>
+                            <option value="Security">Security</option>
+                            <option value="Functional">Functional</option>
+                            <option value="Branch/Logic">Branch/Logic</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label for="filter-priority">Priority:</label>
+                        <select id="filter-priority" class="filter-select" onchange="applyFilters()">
+                            <option value="All">All Priorities</option>
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label for="filter-severity">Severity:</label>
+                        <select id="filter-severity" class="filter-select" onchange="applyFilters()">
+                            <option value="All">All Severities</option>
+                            <option value="Critical">Critical</option>
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item flex-1">
+                        <label for="filter-search">Search:</label>
+                        <input type="text" id="filter-search" class="filter-input" placeholder="Search by title, input, or reason..." oninput="applyFilters()">
+                    </div>
+
+                    <button type="button" class="btn-sm btn-outline" id="btn-toggle-all-tc" onclick="toggleAllTestCases()">
+                        Toggle Details
+                    </button>
+                </div>
+
+                <!-- Filter Counter Summary -->
+                <div class="filter-summary">
+                    Showing <strong id="visible-tc-count">0</strong> of <strong id="total-tc-count">0</strong> test cases
+                </div>
+
+                <!-- Card View Container -->
+                <div id="test-cases-list" class="test-cases-grid">
+                    <!-- Populated dynamically via JS -->
+                </div>
+
+                <!-- Table View Container -->
+                <div id="test-cases-table-wrapper" class="test-cases-table-wrapper" style="display: none;">
+                    <table class="test-cases-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Function</th>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Input</th>
+                                <th>Expected Result</th>
+                                <th>Priority</th>
+                                <th>Severity</th>
+                            </tr>
+                        </thead>
+                        <tbody id="test-cases-table-body">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB PANE 2: RAG Transparency Section -->
+            <section class="panel rag-panel tab-content" id="pane-rag">
+                <div class="panel-header">
+                    <div>
+                        <h2>RAG Context Used (FAISS Vector Retrieval)</h2>
+                        <p class="panel-subtitle">Knowledge retrieved from local software testing knowledge base to augment the LLM prompt</p>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <button type="button" class="btn-sm btn-outline" onclick="toggleAllRAGItems()">Expand/Collapse All</button>
+                        <span class="badge badge-primary" id="rag-count-badge">0 Chunks Retrieved</span>
+                    </div>
+                </div>
+
+                <div id="rag-items-container" class="rag-accordion">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </section>
+
+            <!-- TAB PANE 3: Code Analysis Panel -->
+            <section class="panel analysis-panel tab-content" id="pane-ast">
+                <div class="panel-header">
+                    <div>
+                        <h2>Code Structural Analysis (AST)</h2>
+                        <p class="panel-subtitle">Syntactic inspection used to construct the targeted RAG retrieval query</p>
+                    </div>
+                    <span class="badge badge-info" id="analysis-summary-badge">Analyzed</span>
+                </div>
+                <div class="analysis-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-functions">0</div>
+                        <div class="stat-label">Functions</div>
+                        <div class="stat-detail" id="detail-functions">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-conditions">0</div>
+                        <div class="stat-label">Conditions & Branches</div>
+                        <div class="stat-detail" id="detail-conditions">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-loops">0</div>
+                        <div class="stat-label">Loops & Iterations</div>
+                        <div class="stat-detail" id="detail-loops">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-exceptions">0</div>
+                        <div class="stat-label">Exceptions & Handlers</div>
+                        <div class="stat-detail" id="detail-exceptions">-</div>
+                    </div>
+                </div>
+
+                <div class="analysis-details-row">
+                    <div class="detail-box">
+                        <span class="detail-box-title">Identified Conditions & Guard Clauses:</span>
+                        <ul id="conditions-list" class="tag-list"></ul>
+                    </div>
+                    <div class="detail-box">
+                        <span class="detail-box-title">Synthesized RAG Retrieval Query:</span>
+                        <div id="retrieval-query-display" class="query-code-snippet"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Floating Back to Top Button -->
+    <button type="button" id="floating-top-btn" class="floating-top-btn" onclick="scrollToTop()" title="Back to Top" aria-label="Back to Top">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+    </button>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <p>College Project: <strong>RAG-Based AI Test Case Generator</strong> &bull; Powered by FAISS Vector DB + Google Gemini</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/static/js/script.js"></script>
+</body>
+</html>

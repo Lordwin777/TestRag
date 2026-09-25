@@ -1,0 +1,50 @@
+Concept Name: Unit Testing
+
+Definition:
+Unit testing is the level of software testing where individual units or components of a software program (individual functions, methods, procedures, or classes) are tested in isolation from the rest of the application. It ensures that the smallest testable parts of the software perform their intended operations accurately, predictably, and independently of external dependencies.
+
+When to Use It:
+- For every individual function, method, helper, or mathematical routine in the codebase.
+- During test-driven development (TDD) or continuous integration (CI) pipelines.
+- To provide fast regression detection when refactoring or optimizing algorithms.
+
+Important Rules:
+1. Each unit test must isolate the target unit; external systems (databases, APIs, filesystem) should be mocked or stubbed.
+2. Unit tests must be fast, deterministic, and repeatable in any order.
+3. Assertions should test single concerns per test case where possible.
+4. Both inputs and expected return values must be deterministic.
+
+Examples:
+- Testing `calculate_discount(100, 10)` returns `90`.
+- Testing a string sanitizer function `strip_tags("<p>hello</p>")` returns `"hello"`.
+- Testing a math utility `clamp(val, min_val, max_val)`.
+
+Example Test Cases:
+- ID: TC_UNIT_001
+  Function: calculate_discount
+  Title: Isolated unit test for 10% discount on integer price
+  Test Type: Unit
+  Input: {"price": 100, "discount": 10}
+  Preconditions: Isolated invocation of calculate_discount
+  Steps: ["Call calculate_discount(100, 10)", "Assert result == 90.0"]
+  Expected Result: 90.0
+  Priority: High
+  Severity: Medium
+  Reason: Validates isolated logic unit in complete detachment from external state.
+
+- ID: TC_UNIT_002
+  Function: calculate_discount
+  Title: Isolated unit test for 50% discount on fractional price
+  Test Type: Unit
+  Input: {"price": 99.50, "discount": 50}
+  Preconditions: Floating point arithmetic precision support
+  Steps: ["Call calculate_discount(99.50, 50)", "Assert abs(result - 49.75) < 0.001"]
+  Expected Result: 49.75
+  Priority: High
+  Severity: Medium
+  Reason: Confirms accurate float arithmetic calculation in unit isolation.
+
+Guidance for Generating Test Cases:
+1. Break down the code into each standalone function or method.
+2. Define discrete test cases that pass concrete parameters and assert exact return values.
+3. Keep test setup minimal, focused solely on the function's inputs and outputs.

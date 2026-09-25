@@ -1,0 +1,51 @@
+Concept Name: Functional Testing
+
+Definition:
+Functional testing is a black-box and white-box testing technique that verifies that software features, functions, and business logic operate strictly according to their specified functional requirements and intended output specifications. It focuses on validating input-output relationships without assuming internal flaws, ensuring every function delivers the expected business outcome under proper usage.
+
+When to Use It:
+- When validating that core business calculations, data transformations, or logic workflows execute as required.
+- Whenever a module or function provides an observable return value, state change, or output based on specific parameters.
+- As the baseline foundation before applying specialized negative, boundary, or security testing.
+
+Important Rules:
+1. Every primary function path must have at least one test case verifying correct end-to-end processing.
+2. The expected result must be explicitly predetermined based on business rules or arithmetic specifications.
+3. Test preconditions must ensure all dependent variables or configurations are correctly initialized.
+4. Functional test cases must evaluate normal, expected real-world data and user inputs.
+
+Examples:
+A discount calculator receiving valid price = 100 and discount = 10 must return final price = 90.
+An authentication helper receiving valid username and password returns a valid session token.
+A string formatter receiving "john doe" and capitalize=True returns "John Doe".
+
+Example Test Cases:
+- ID: TC_FUNC_001
+  Function: calculate_discount
+  Title: Verify standard discount calculation on regular price
+  Test Type: Functional
+  Input: {"price": 100.0, "discount": 15.0}
+  Preconditions: Function is loaded and parameters are numeric
+  Steps: ["Pass price=100.0 and discount=15.0 to calculate_discount", "Capture the returned float"]
+  Expected Result: 85.0
+  Priority: High
+  Severity: High
+  Reason: Validates the fundamental business requirement of applying a percentage markdown.
+
+- ID: TC_FUNC_002
+  Function: get_user_status
+  Title: Verify active status returned for active accounts
+  Test Type: Functional
+  Input: {"is_active": True, "balance": 50}
+  Preconditions: User object is initialized
+  Steps: ["Call get_user_status with is_active=True and positive balance"]
+  Expected Result: "Active"
+  Priority: Medium
+  Severity: Medium
+  Reason: Confirms proper state mapping under normal operation.
+
+Guidance for Generating Test Cases:
+1. Examine function signatures, input parameters, and mathematical or data transformations.
+2. Formulate test cases that simulate typical valid end-user operations.
+3. Assert that the returned data matches the expected formula or business rule.
+4. Ensure priority is set to High for core business logic functions.

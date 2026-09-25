@@ -1,0 +1,51 @@
+Concept Name: Defensive Security Testing and Secure Coding Verification
+
+Definition:
+Defensive security testing evaluates software components to ensure they uphold core security principles including confidentiality, integrity, availability, authentication, and authorization. It verifies that inputs are properly sanitized and validated, sensitive credentials or data are protected against exposure, error messages do not leak system internals, and resource consumption is bounded against denial-of-service.
+
+When to Use It:
+- Whenever functions accept untrusted external data (strings, files, network payloads, user tokens).
+- In authentication, authorization, access control, password verification, or session management routines.
+- In database queries, file system access, shell execution, or cryptographic implementations.
+
+Important Rules:
+1. All user-supplied inputs must undergo strict type, length, character set, and range validation before processing.
+2. Defensive tests must verify that invalid format injections (e.g. quote characters, format specifiers, path traversal tokens like `../`) are rejected or safely escaped.
+3. Verify that secret keys, passwords, and authorization tokens cannot be accessed or reflected in outputs.
+4. Error responses must present generic, safe messages rather than verbose raw stack traces, database errors, or system paths.
+5. Defensive security testing must ONLY evaluate defensive safeguards; never include harmful exploitation payloads.
+
+Examples:
+- Verifying that a file loader strictly checks and rejects paths containing `../` to prevent directory traversal.
+- Checking that a user authentication method returns identical timing and messages for non-existent users and incorrect passwords to prevent user enumeration.
+- Ensuring input size limits prevent memory exhaustion.
+
+Example Test Cases:
+- ID: TC_SEC_001
+  Function: sanitize_username
+  Title: Defensive check: Reject strings containing path traversal sequences
+  Test Type: Security
+  Input: {"username": "../../etc/shadow"}
+  Preconditions: Username validation pattern enforced
+  Steps: ["Call sanitize_username('../../etc/shadow')", "Check validation decision"]
+  Expected Result: "Validation Error: Disallowed characters or path sequence detected"
+  Priority: High
+  Severity: Critical
+  Reason: Confirms defensive input validation prevents directory traversal attempts.
+
+- ID: TC_SEC_002
+  Function: verify_token
+  Title: Defensive check: Reject expired or malformed security token
+  Test Type: Security
+  Input: {"token": "expired_or_tampered_payload"}
+  Preconditions: Token signature verification enabled
+  Steps: ["Call verify_token('expired_or_tampered_payload')"]
+  Expected Result: False or UnauthorizedException
+  Priority: High
+  Severity: High
+  Reason: Asserts that invalid cryptographic or authentication tokens are cleanly denied.
+
+Guidance for Generating Test Cases:
+1. Examine code for security-sensitive markers: `auth`, `token`, `password`, `key`, `file`, `path`, `sql`, `query`, `admin`, `role`.
+2. Construct defensive verification tests testing empty tokens, malformed strings, length overflows, and unauthorized role requests.
+3. Assert that access is denied securely and that exceptions or errors are sanitized.

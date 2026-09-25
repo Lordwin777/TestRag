@@ -1,0 +1,27 @@
+# Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environment Variables
+.env
+
+# Exported user files
+exports/*.csv
+exports/*.json
+
+# Exclude Word Documents per user instruction
+*.docx
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

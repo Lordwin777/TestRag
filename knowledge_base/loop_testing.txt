@@ -1,0 +1,69 @@
+Concept Name: Loop Testing (Repetition and Iteration Verification)
+
+Definition:
+Loop testing is a white-box testing technique that exclusively focuses on the validity of loop constructs (`for`, `while`, `do-while`, nested loops, list comprehensions). It is designed to uncover defects involving loop boundary conditions, improper initialization, off-by-one errors during termination, infinite loops, and state corruption across multiple iterations.
+
+When to Use It:
+- Whenever source code contains iteration statements (`for`, `while`, recursion).
+- When processing sequences, arrays, dictionaries, linked structures, or paginated datasets.
+- To detect performance degradation, memory leaks, or unreleased variables within repeated execution.
+
+Important Rules:
+1. For simple loops with N maximum iterations, test:
+   a. Skip the loop entirely (0 iterations).
+   b. Exactly one pass through the loop (1 iteration).
+   c. Two passes through the loop (2 iterations).
+   d. A typical number of iterations (m iterations where 2 < m < n - 1).
+   e. (n - 1), n, and (n + 1) iterations.
+2. For nested loops: test the innermost loop first with outer loops held at minimum values, then work outwards.
+3. For while loops: test termination conditions to ensure no possibility of an infinite loop.
+4. Verify that accumulator variables are initialized before loop entry and updated correctly inside.
+
+Examples:
+- Summing an array of prices:
+  Test with empty array `[]` (0 iterations).
+  Test with single item `[50]` (1 iteration).
+  Test with multiple items `[10, 20, 30]` (multiple iterations).
+- Searching a string in a while loop until EOF or character match.
+
+Example Test Cases:
+- ID: TC_LOOP_001
+  Function: sum_items
+  Title: Zero iterations - empty input list
+  Test Type: Functional
+  Input: {"items": []}
+  Preconditions: Loop construct receives empty iterable
+  Steps: ["Call sum_items([])", "Verify loop body is bypassed"]
+  Expected Result: 0
+  Priority: High
+  Severity: Medium
+  Reason: Verifies loop behavior when iteration count is zero.
+
+- ID: TC_LOOP_002
+  Function: sum_items
+  Title: Single iteration - list with one element
+  Test Type: Functional
+  Input: {"items": [42]}
+  Preconditions: Loop construct receives single item iterable
+  Steps: ["Call sum_items([42])", "Verify accumulator state"]
+  Expected Result: 42
+  Priority: Medium
+  Severity: Low
+  Reason: Verifies that a single iteration accurately executes without off-by-one faults.
+
+- ID: TC_LOOP_003
+  Function: find_first_negative
+  Title: Multi-iteration loop with early break condition
+  Test Type: Functional
+  Input: {"numbers": [1, 3, 5, -2, 8]}
+  Preconditions: Loop terminates early upon finding negative number
+  Steps: ["Call find_first_negative([1, 3, 5, -2, 8])"]
+  Expected Result: -2
+  Priority: High
+  Severity: Medium
+  Reason: Verifies that loop termination logic and break statement work correctly mid-iteration.
+
+Guidance for Generating Test Cases:
+1. Inspect AST for `For`, `While`, and generator/comprehension expressions.
+2. Design test inputs that evaluate 0 iterations, 1 iteration, typical iterations, and maximum iterations.
+3. Test break, continue, and loop termination boolean expressions.

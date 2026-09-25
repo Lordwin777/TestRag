@@ -1,0 +1,50 @@
+Concept Name: State Transition Testing
+
+Definition:
+State Transition Testing is a technique based on state machine theory that verifies whether a software system transitions correctly from one operational state to another in response to specific events, triggers, or method calls. It ensures that valid transitions occur as designed, and that invalid transitions from a given state are strictly forbidden or rejected.
+
+When to Use It:
+- When the code manages an entity with a lifecycle (e.g. Order: PENDING -> PAID -> SHIPPED -> DELIVERED -> CANCELLED).
+- When methods alter internal state flags (`self.status`, `is_authenticated`, `connection_state`).
+- In session management, finite state machines, multi-step wizards, or transaction processors.
+
+Important Rules:
+1. Identify all possible system states, triggers/events, and resulting states.
+2. Test all valid transitions between states.
+3. Test invalid transition attempts (e.g. attempting to cancel an order that has already been delivered).
+4. Verify that state invariants and post-conditions hold after each transition.
+
+Examples:
+- E-commerce cart: EMPTY -> ITEM_ADDED -> CHECKOUT_STARTED -> PAYMENT_PROCESSED -> COMPLETED.
+- Database connection pool: DISCONNECTED -> CONNECTING -> CONNECTED -> IDLE -> CLOSED.
+
+Example Test Cases:
+- ID: TC_ST_001
+  Function: transition_order_status
+  Title: Verify valid transition from PENDING to PROCESSING
+  Test Type: Functional
+  Input: {"current_state": "PENDING", "action": "START_PROCESSING"}
+  Preconditions: Order exists with status PENDING
+  Steps: ["Call transition_order_status('PENDING', 'START_PROCESSING')"]
+  Expected Result: "PROCESSING"
+  Priority: High
+  Severity: Medium
+  Reason: Validates standard forward lifecycle progression.
+
+- ID: TC_ST_002
+  Function: transition_order_status
+  Title: Disallow invalid transition from COMPLETED to PENDING
+  Test Type: Negative
+  Input: {"current_state": "COMPLETED", "action": "REOPEN"}
+  Preconditions: Order is in terminal COMPLETED state
+  Steps: ["Call transition_order_status('COMPLETED', 'REOPEN')"]
+  Expected Result: "Invalid State Transition Error"
+  Priority: High
+  Severity: High
+  Reason: Prevents unauthorized modification of terminal lifecycle states.
+
+Guidance for Generating Test Cases:
+1. Search code for state variables, enums, status strings, or lifecycle methods.
+2. Map out the directed graph of valid state transitions.
+3. Generate test cases for expected sequential transitions.
+4. Formulate negative test cases attempting out-of-sequence or illegal transitions.

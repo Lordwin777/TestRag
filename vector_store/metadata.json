@@ -1,0 +1,420 @@
+{
+  "total_chunks": 26,
+  "dimension": 768,
+  "embedding_mode": "local",
+  "chunks": [
+    {
+      "file_name": "boundary_value_analysis.txt",
+      "topic": "Boundary Value Analysis (BVA)",
+      "chunk_type": "full_overview",
+      "content": "Concept Name: Boundary Value Analysis (BVA)\n\nDefinition:\nBoundary Value Analysis (BVA) is a black-box test design technique based on the empirical observation that defects are concentrated at the extreme edges or boundaries of input domains rather than in the center. BVA tests the minimum, just above minimum, nominal (typical), just below maximum, and maximum values, as well as values immediately outside the boundaries (off-by-one errors).\n\nWhen to Use It:\n- Whenever source code contains comparison operators: `<`, `<=`, `>`, `>=`, `==`, `!=`.\n- Whenever numerical ranges, list lengths, string lengths, or loop counters are constrained by thresholds.\n- When validating discounts, age restrictions, credit ratings, quantity ceilings, or page limits.\n\nImportant Rules:\n1. For an interval [min, max], test: (min - 1), min, (min + 1), (max - 1), max, and (max + 1).\n2. Off-by-one errors (e.g. using `<` instead of `<=`) are discovered primarily through boundary values.\n3. Both valid boundaries and immediate invalid boundaries must be evaluated.\n4. Float boundaries should test precision limits where applicable (e.g. 0.0, 0.01, 99.99, 100.0).\n\nExamples:\n- If a function checks `if discount < 0 or discount > 100`:\n  Boundaries are 0 and 100.\n  Test values: -1 (invalid), 0 (valid edge), 1 (valid inside), 99 (valid inside), 100 (valid edge), 101 (invalid).\n- If checking `if age >= 18`:\n  Boundary is 18.\n  Test values: 17 (rejected), 18 (accepted), 19 (accepted).\n\nExample Test Cases:\n- ID: TC_BVA_001\n  Function: calculate_discount\n  Title: Verify discount at exact lower boundary 0%\n  Test Type: Boundary\n  Input: {\"price\": 100.0, \"discount\": 0.0}\n  Preconditions: Discount must allow 0% as valid\n  Steps: [\"Call calculate_discount(100.0, 0.0)\"]\n  Expected Result: 100.0\n  Priority: High\n  Severity: Medium\n  Reason: Validates the minimum valid percentage boundary without price alteration.\n\n- ID: TC_BVA_002\n  Function: calculate_discount\n  Title: Verify discount at exact upper boundary 100%\n  Test Type: Boundary\n  Input: {\"price\": 100.0, \"discount\": 100.0}\n  Preconditions: 100% discount must result in zero final price\n  Steps: [\"Call calculate_discount(100.0, 100.0)\"]\n  Expected Result: 0.0\n  Priority: High\n  Severity: Medium\n  Reason: Verifies 100% boundary calculation results in a free item.\n\n- ID: TC_BVA_003\n  Function: calculate_discount\n  Title: Verify discount just above maximum boundary (100.01%)\n  Test Type: Boundary\n  Input: {\"price\": 100.0, \"discount\": 100.01}\n  Preconditions: Discount constraint is 0 <= discount <= 100\n  Steps: [\"Call calculate_discount(100.0, 100.01)\"]\n  Expected Result: \"Invalid discount\"\n  Priority: High\n  Severity: High\n  Reason: Detects boundary violation just over the 100 threshold.\n\nGuidance for Generating Test Cases:\n1. Locate numerical comparisons in the source code (e.g. `< 0`, `> 100`, `>= 18`).\n2. Identify the boundary constants (e.g. 0, 100, 18).\n3. Generate test cases for exact boundary points, points just inside, and points just outside.\n4. Document expected boundary decisions in the reason field.",
+      "summary": "Boundary Value Analysis (BVA) is a black-box test design technique based on the empirical observation that defects are concentrated at the extreme edges or boundaries of input domains rather than in the center. BVA tests the minimum, just above minimum, nominal (typical), just below maximum, and maximum values, as well as values immediately outside the boundaries (off-by-one errors).",
+      "tags": [
+        "boundary",
+        "analysis",
+        "bva",
+        "value"
+      ],
+      "id": 0
+    },
+    {
+      "file_name": "boundary_value_analysis.txt",
+      "topic": "Boundary Value Analysis (BVA) (Generation Rules)",
+      "chunk_type": "guidance",
+      "content": "Topic: Boundary Value Analysis (BVA)\n\nGuidance for Generating Test Cases:\n1. Locate numerical comparisons in the source code (e.g. `< 0`, `> 100`, `>= 18`).\n2. Identify the boundary constants (e.g. 0, 100, 18).\n3. Generate test cases for exact boundary points, points just inside, and points just outside.\n4. Document expected boundary decisions in the reason field.",
+      "summary": "Key rules and actionable heuristics for Boundary Value Analysis (BVA) test case generation.",
+      "tags": [
+        "boundary",
+        "analysis",
+        "bva",
+        "value",
+        "rules",
+        "heuristics",
+        "guidance"
+      ],
+      "id": 1
+    },
+    {
+      "file_name": "branch_testing.txt",
+      "topic": "Branch and Condition Testing (White-Box Logic Coverage)",
+      "chunk_type": "full_overview",
+      "content": "Concept Name: Branch and Condition Testing (White-Box Logic Coverage)\n\nDefinition:\nBranch and Condition testing is a structural white-box testing technique designed to ensure that every decision point, conditional branch (`if`, `elif`, `else`, `switch`, ternary), and boolean sub-expression in the source code is evaluated to both `True` and `False` at least once during test execution. Achieving 100% branch coverage guarantees that no hidden code block or alternative execution path remains untested.\n\nWhen to Use It:\n- For any code containing control flow branches (`if`, `elif`, `else`, `switch/case`).\n- When compound boolean conditions exist (`and`, `or`, `not`).\n- To prevent dead code, unreachable logic branches, or untested error-handling fallbacks.\n\nImportant Rules:\n1. Every decision point with two outcomes (True/False) requires at least two test cases to cover both branches.\n2. In compound conditions like `(A or B)`, individual operands must be tested to verify that each can independently influence the outcome.\n3. Fallback `else` clauses and default switch branches must be explicitly exercised.\n4. Early return statements inside guard conditions must be verified.\n\nExamples:\nGiven:\n```python\nif price < 0:\n    return \"Invalid price\"\nif discount < 0 or discount > 100:\n    return \"Invalid discount\"\nreturn price - (price * discount / 100)\n```\nBranches:\n1. `price < 0` is True -> Branch 1 (\"Invalid price\")\n2. `price < 0` is False -> Continues to next condition\n3. `discount < 0` is True -> Branch 2 (\"Invalid discount\")\n4. `discount > 100` is True -> Branch 3 (\"Invalid discount\")\n5. Neither is True -> Branch 4 (Calculate discount and return final price)\n\nExample Test Cases:\n- ID: TC_BRANCH_001\n  Function: calculate_discount\n  Title: Exercise branch 1: price < 0 evaluates to True\n  Test Type: Branch/Logic\n  Input: {\"price\": -10.0, \"discount\": 20.0}\n  Preconditions: First conditional evaluation\n  Steps: [\"Invoke calculate_discount with price = -10.0\"]\n  Expected Result: \"Invalid price\"\n  Priority: High\n  Severity: High\n  Reason: Exercises the first decision branch where price < 0 evaluates to True.\n\n- ID: TC_BRANCH_002\n  Function: calculate_discount\n  Title: Exercise branch 2: discount < 0 evaluates to True\n  Test Type: Branch/Logic\n  Input: {\"price\": 100.0, \"discount\": -5.0}\n  Preconditions: price < 0 evaluates to False; discount < 0 evaluates to True\n  Steps: [\"Invoke calculate_discount with price = 100.0, discount = -5.0\"]\n  Expected Result: \"Invalid discount\"\n  Priority: High\n  Severity: High\n  Reason: Verifies the left disjunct of the compound boolean condition.\n\n- ID: TC_BRANCH_003\n  Function: calculate_discount\n  Title: Exercise branch 3: discount > 100 evaluates to True\n  Test Type: Branch/Logic\n  Input: {\"price\": 100.0, \"discount\": 105.0}\n  Preconditions: price < 0 is False; discount < 0 is False; discount > 100 is True\n  Steps: [\"Invoke calculate_discount with price = 100.0, discount = 105.0\"]\n  Expected Result: \"Invalid discount\"\n  Priority: High\n  Severity: High\n  Reason: Verifies the right disjunct of the compound condition.\n\n- ID: TC_BRANCH_004\n  Function: calculate_discount\n  Title: Exercise branch 4: all conditions evaluate to False (Normal exit path)\n  Test Type: Branch/Logic\n  Input: {\"price\": 100.0, \"discount\": 20.0}\n  Preconditions: All guard conditions evaluate to False\n  Steps: [\"Invoke calculate_discount with valid parameters\"]\n  Expected Result: 80.0\n  Priority: High\n  Severity: Medium\n  Reason: Reaches the primary computation path after passing all branch filters.\n\nGuidance for Generating Test Cases:\n1. Parse the AST to extract all `If`, `IfExp`, and boolean logic operators (`Or`, `And`).\n2. Construct one test case for each decision outcome (True and False).\n3. Ensure no unexecuted code blocks remain between the entry and exit points.",
+      "summary": "Branch and Condition testing is a structural white-box testing technique designed to ensure that every decision point, conditional branch (`if`, `elif`, `else`, `switch`, ternary), and boolean sub-expression in the source code is evaluated to both `True` and `False` at least once during test execution. Achieving 100% branch coverage guarantees that no hidden code block or alternative execution path remains untested.",
+      "tags": [
+        "and",
+        "box",
+        "logic",
+        "testing",
+        "condition",
+        "branch",
+        "white",
+        "coverage"
+      ],
+      "id": 2
+    },
+    {
+      "file_name": "branch_testing.txt",
+      "topic": "Branch and Condition Testing (White-Box Logic Coverage) (Generation Rules)",
+      "chunk_type": "guidance",
+      "content": "Topic: Branch and Condition Testing (White-Box Logic Coverage)\n\nGuidance for Generating Test Cases:\n1. Parse the AST to extract all `If`, `IfExp`, and boolean logic operators (`Or`, `And`).\n2. Construct one test case for each decision outcome (True and False).\n3. Ensure no unexecuted code blocks remain between the entry and exit points.",
+      "summary": "Key rules and actionable heuristics for Branch and Condition Testing (White-Box Logic Coverage) test case generation.",
+      "tags": [
+        "and",
+        "box",
+        "logic",
+        "testing",
+        "condition",
+        "branch",
+        "white",
+        "coverage",
+        "rules",
+        "heuristics",
+        "guidance"
+      ],
+      "id": 3
+    },
+    {
+      "file_name": "decision_table_testing.txt",
+      "topic": "Decision Table Testing",
+      "chunk_type": "full_overview",
+      "content": "Concept Name: Decision Table Testing\n\nDefinition:\nDecision Table Testing (also known as Cause-Effect Table Testing) is a systematic technique used to capture and test complex business rules that depend on combinations of multiple input conditions and result in distinct actions or outcomes. It models combinations of boolean flags, thresholds, or options into a truth matrix ensuring that all condition permutations are accounted for.\n\nWhen to Use It:\n- When code contains compound boolean expressions: `if A and B:`, `if A or (B and C):`, nested `if/elif/else` blocks.\n- When business logic requires different outputs depending on multiple concurrent parameter states.\n- To discover missing logic branches or contradictory rule definitions in complex workflows.\n\nImportant Rules:\n1. Every column in a decision table represents a unique rule (combination of conditions).\n2. For N binary conditions, there are up to 2^N possible permutations (or reduced permutations where conditions are mutually exclusive).\n3. Each distinct combination must produce a clearly defined expected action or result.\n4. Redundant or impossible combinations should be identified and pruned logically.\n\nExamples:\nLoan approval logic:\nCondition 1: Credit Score >= 700 (True/False)\nCondition 2: Income >= 50,000 (True/False)\nCondition 3: Existing Debt == 0 (True/False)\nOutcomes: Auto-Approve, Manual-Review, or Decline.\n\nExample Test Cases:\n- ID: TC_DT_001\n  Function: process_order\n  Title: Combination: In-stock item with verified user and valid payment\n  Test Type: Functional\n  Input: {\"in_stock\": True, \"user_verified\": True, \"payment_valid\": True}\n  Preconditions: Order processor initialized\n  Steps: [\"Call process_order(in_stock=True, user_verified=True, payment_valid=True)\"]\n  Expected Result: \"Order Processed\"\n  Priority: High\n  Severity: High\n  Reason: Verifies rule combination where all success predicates are met simultaneously.\n\n- ID: TC_DT_002\n  Function: process_order\n  Title: Combination: In-stock item with unverified user but valid payment\n  Test Type: Negative\n  Input: {\"in_stock\": True, \"user_verified\": False, \"payment_valid\": True}\n  Preconditions: Order processor initialized\n  Steps: [\"Call process_order(in_stock=True, user_verified=False, payment_valid=True)\"]\n  Expected Result: \"Verification Required\"\n  Priority: High\n  Severity: Medium\n  Reason: Verifies rule branch when user verification predicate fails.\n\nGuidance for Generating Test Cases:\n1. Identify all variables in compound boolean statements (`and`, `or`, nested `if`).\n2. Construct test cases covering combinations of (True, True), (True, False), (False, True), (False, False).\n3. Confirm that short-circuit evaluation logic executes safely without unintended side effects.",
+      "summary": "Decision Table Testing (also known as Cause-Effect Table Testing) is a systematic technique used to capture and test complex business rules that depend on combinations of multiple input conditions and result in distinct actions or outcomes. It models combinations of boolean flags, thresholds, or options into a truth matrix ensuring that all condition permutations are accounted for.",
+      "tags": [
+        "testing",
+        "decision",
+        "table"
+      ],
+      "id": 4
+    },
+    {
+      "file_name": "decision_table_testing.txt",
+      "topic": "Decision Table Testing (Generation Rules)",
+      "chunk_type": "guidance",
+      "content": "Topic: Decision Table Testing\n\nGuidance for Generating Test Cases:\n1. Identify all variables in compound boolean statements (`and`, `or`, nested `if`).\n2. Construct test cases covering combinations of (True, True), (True, False), (False, True), (False, False).\n3. Confirm that short-circuit evaluation logic executes safely without unintended side effects.",
+      "summary": "Key rules and actionable heuristics for Decision Table Testing test case generation.",
+      "tags": [
+        "testing",
+        "decision",
+        "table",
+        "rules",
+        "heuristics",
+        "guidance"
+      ],
+      "id": 5
+    },
+    {
+      "file_name": "edge_case_testing.txt",
+      "topic": "Edge Case Testing",
+      "chunk_type": "full_overview",
+      "content": "Concept Name: Edge Case Testing\n\nDefinition:\nEdge case testing involves testing software behavior at the absolute extremes of operating parameters, unusual concurrency conditions, rare data types, or non-standard environmental inputs that occur rarely in typical operation but frequently lead to severe system failures, security vulnerabilities, or resource leaks if unhandled.\n\nWhen to Use It:\n- For routines processing collections, strings, numbers, files, or memory structures.\n- To detect unexpected behaviors caused by zero-length inputs, maximum integer limits, Unicode symbols, or null references.\n- Whenever robustness, fault tolerance, and defense-in-depth are required.\n\nImportant Rules:\n1. Always test empty inputs: empty string `\"\"`, empty list `[]`, empty dict `{}`, `None` / `null`.\n2. Always test extreme numerical limits: 0, -0.0, float('inf'), float('nan'), MAX_INT (2^31 - 1, 2^63 - 1).\n3. Test special characters: whitespace-only strings, UTF-8 emojis, newline characters (`\\n`, `\\r\\t`), escape sequences.\n4. Verify that data formatting preserves precision without silent truncation.\n\nExamples:\n- Supplying price = 0 to calculate_discount(0, 10).\n- Passing an empty string or whitespace string to a username validator.\n- Passing a list with 10,000 items to a sort algorithm to check memory exhaustion.\n\nExample Test Cases:\n- ID: TC_EDGE_001\n  Function: calculate_discount\n  Title: Price of zero dollars with valid discount percentage\n  Test Type: Edge Case\n  Input: {\"price\": 0.0, \"discount\": 20.0}\n  Preconditions: System treats price 0 as zero monetary cost\n  Steps: [\"Call calculate_discount(0.0, 20.0)\"]\n  Expected Result: 0.0\n  Priority: Medium\n  Severity: Low\n  Reason: Verifies that a zero price calculates safely to 0 without division by zero.\n\n- ID: TC_EDGE_002\n  Function: parse_user_input\n  Title: Input containing only whitespace and unicode control characters\n  Test Type: Edge Case\n  Input: {\"text\": \"   \\t\\n   \\u200b\"}\n  Preconditions: Function expects non-empty printable user input\n  Steps: [\"Invoke parse_user_input with whitespace string\"]\n  Expected Result: \"Empty input not allowed\"\n  Priority: High\n  Severity: Medium\n  Reason: Validates that whitespace stripping handles zero-width spaces and formatting characters.\n\nGuidance for Generating Test Cases:\n1. Look for parameters accepting strings, arrays, objects, or floating-point values.\n2. Formulate test cases with empty structures, null/None, zero, and extreme values.\n3. Assert that functions either produce a well-defined fallback value or trigger a clean validation error.",
+      "summary": "Edge case testing involves testing software behavior at the absolute extremes of operating parameters, unusual concurrency conditions, rare data types, or non-standard environmental inputs that occur rarely in typical operation but frequently lead to severe system failures, security vulnerabilities, or resource leaks if unhandled.",
+      "tags": [
+        "edge",
+        "case",
+        "testing"
+      ],
+      "id": 6
+    },
+    {
+      "file_name": "edge_case_testing.txt",
+      "topic": "Edge Case Testing (Generation Rules)",
+      "chunk_type": "guidance",
+      "content": "Topic: Edge Case Testing\n\nGuidance for Generating Test Cases:\n1. Look for parameters accepting strings, arrays, objects, or floating-point values.\n2. Formulate test cases with empty structures, null/None, zero, and extreme values.\n3. Assert that functions either produce a well-defined fallback value or trigger a clean validation error.",
+      "summary": "Key rules and actionable heuristics for Edge Case Testing test case generation.",
+      "tags": [
+        "edge",
+        "case",
+        "testing",
+        "rules",
+        "heuristics",
+        "guidance"
+      ],
+      "id": 7
+    },
+    {
+      "file_name": "equivalence_partitioning.txt",
+      "topic": "Equivalence Partitioning (EP)",
+      "chunk_type": "full_overview",
+      "content": "Concept Name: Equivalence Partitioning (EP)\n\nDefinition:\nEquivalence Partitioning (EP) is a software testing technique that divides the input domain of a program into finite partitions or classes of data from which test cases can be derived. The fundamental assumption is that all data values belonging to the same partition are treated identically by the program logic, so testing one representative value from each partition is equivalent to testing all values in that partition.\n\nWhen to Use It:\n- When the input data set is large or infinite, making exhaustive testing impossible.\n- Whenever input validation establishes valid ranges, enumerated categories, or invalid bands.\n- To reduce test case redundancy while maintaining high defect detection coverage.\n\nImportant Rules:\n1. Identify all valid equivalence partitions (inputs the system should process successfully).\n2. Identify all invalid equivalence partitions (inputs the system should reject or handle as errors).\n3. Select at least one representative value from each valid partition.\n4. Select at least one representative value from each invalid partition.\n5. Do not combine multiple invalid partitions in a single test case; test them individually.\n\nExamples:\nFor a function calculate_discount(price, discount):\nPartition 1 (Valid Price): price > 0 (e.g. 50.0, 100.0)\nPartition 2 (Invalid Price): price < 0 (e.g. -25.0)\nPartition 3 (Valid Discount): 0 <= discount <= 100 (e.g. 25.0)\nPartition 4 (Invalid Discount Low): discount < 0 (e.g. -15.0)\nPartition 5 (Invalid Discount High): discount > 100 (e.g. 150.0)\n\nExample Test Cases:\n- ID: TC_EP_001\n  Function: calculate_discount\n  Title: Test representative value from valid partition\n  Test Type: Functional\n  Input: {\"price\": 150.0, \"discount\": 25.0}\n  Preconditions: Valid price and valid discount partitions selected\n  Steps: [\"Call calculate_discount(150.0, 25.0)\"]\n  Expected Result: 112.5\n  Priority: High\n  Severity: Medium\n  Reason: Represents the valid equivalence class for both parameters.\n\n- ID: TC_EP_002\n  Function: calculate_discount\n  Title: Test representative value from invalid negative discount partition\n  Test Type: Negative\n  Input: {\"price\": 100.0, \"discount\": -30.0}\n  Preconditions: Negative discount partition isolated\n  Steps: [\"Call calculate_discount(100.0, -30.0)\"]\n  Expected Result: \"Invalid discount\"\n  Priority: High\n  Severity: High\n  Reason: Validates that any value in the discount < 0 partition triggers rejection.\n\nGuidance for Generating Test Cases:\n1. Examine conditionals and type definitions in the code.\n2. Group possible inputs into distinct mathematical or categorical classes.\n3. Pick one clear, representative value per class.\n4. Ensure each invalid partition is tested separately.",
+      "summary": "Equivalence Partitioning (EP) is a software testing technique that divides the input domain of a program into finite partitions or classes of data from which test cases can be derived. The fundamental assumption is that all data values belonging to the same partition are treated identically by the program logic, so testing one representative value from each partition is equivalent to testing all values in that partition.",
+      "tags": [
+        "equivalence",
+        "partitioning"
+      ],
+      "id": 8
+    },
+    {
+      "file_name": "equivalence_partitioning.txt",
+      "topic": "Equivalence Partitioning (EP) (Generation Rules)",
+      "chunk_type": "guidance",
+      "content": "Topic: Equivalence Partitioning (EP)\n\nGuidance for Generating Test Cases:\n1. Examine conditionals and type definitions in the code.\n2. Group possible inputs into distinct mathematical or categorical classes.\n3. Pick one clear, representative value per class.\n4. Ensure each invalid partition is tested separately.",
+      "summary": "Key rules and actionable heuristics for Equivalence Partitioning (EP) test case generation.",
+      "tags": [
+        "equivalence",
+        "partitioning",
+        "rules",
+        "heuristics",
+        "guidance"
+      ],
+      "id": 9
+    },
+    {
+      "file_name": "exception_testing.txt",
+      "topic": "Exception Testing (Fault Injection and Error Propagation)",
+      "chunk_type": "full_overview",
+      "content": "Concept Name: Exception Testing (Fault Injection and Error Propagation)\n\nDefinition:\nException testing validates that software properly anticipates, catches, handles, and propagates runtime errors, bad inputs, resource unavailability, and anomalous execution states through formal exception handling mechanisms (such as try/except/finally in Python or try/catch/finally in Java/C++). It verifies that exceptions are informative, clean up resources, and never crash the process uncaught.\n\nWhen to Use It:\n- Whenever code contains `try`, `except`, `catch`, `throw`, `raise`, or `finally` blocks.\n- When operations can fail unpredictably (e.g. file I/O, network sockets, database connections, type casting).\n- In functions that explicitly raise exceptions on contract violations (e.g. `raise ValueError(\"Invalid range\")`).\n\nImportant Rules:\n1. Verify that expected exceptions are raised when specified invalid arguments are supplied.\n2. Ensure caught exceptions do not swallow errors silently without logging or appropriate notification.\n3. Test that `finally` blocks and context managers (`with` statements) release resources (close files, release locks) regardless of whether an exception occurred.\n4. Verify exception messages are informative and do not expose sensitive infrastructure details (passwords, connection strings).\n\nExamples:\n- Attempting to convert string \"abc\" to int in an integer parser raises `ValueError`.\n- Opening a non-existent file path `/fake/path/data.json` raises `FileNotFoundError`.\n- Dividing by zero in a mathematical formula raises `ZeroDivisionError`.\n\nExample Test Cases:\n- ID: TC_EXC_001\n  Function: calculate_discount\n  Title: Verify TypeError raised when non-numeric string passed as price\n  Test Type: Exception\n  Input: {\"price\": \"one hundred\", \"discount\": 10}\n  Preconditions: Function expects numeric arguments\n  Steps: [\"Invoke calculate_discount('one hundred', 10)\", \"Assert TypeError is raised or handled\"]\n  Expected Result: \"TypeError or validation message 'Expected numeric price'\"\n  Priority: High\n  Severity: High\n  Reason: Confirms invalid parameter types do not lead to unhandled internal crashes.\n\n- ID: TC_EXC_002\n  Function: read_config_file\n  Title: Handle missing file without application termination\n  Test Type: Exception\n  Input: {\"file_path\": \"/invalid/nonexistent_config.yaml\"}\n  Preconditions: File system does not contain target file\n  Steps: [\"Call read_config_file('/invalid/nonexistent_config.yaml')\"]\n  Expected Result: \"FileNotFoundError handled with default configuration returned\"\n  Priority: High\n  Severity: Critical\n  Reason: Verifies graceful fallback and resource management upon I/O failure.\n\nGuidance for Generating Test Cases:\n1. Identify all `raise` or `throw` statements and determine which input triggers them.\n2. Identify external calls (file, network, parsing) wrapped in `try/except`.\n3. Generate tests providing inputs that trigger each explicit exception clause.\n4. Verify both the exception type and the descriptive error message.",
+      "summary": "Exception testing validates that software properly anticipates, catches, handles, and propagates runtime errors, bad inputs, resource unavailability, and anomalous execution states through formal exception handling mechanisms (such as try/except/finally in Python or try/catch/finally in Java/C++). It verifies that exceptions are informative, clean up resources, and never crash the process uncaught.",
+      "tags": [
+        "injection",
+        "and",
+        "error",
+        "testing",
+        "fault",
+        "propagation",
+        "exception"
+      ],
+      "id": 10
+    },
+    {
+      "file_name": "exception_testing.txt",
+      "topic": "Exception Testing (Fault Injection and Error Propagation) (Generation Rules)",
+      "chunk_type": "guidance",
+      "content": "Topic: Exception Testing (Fault Injection and Error Propagation)\n\nGuidance for Generating Test Cases:\n1. Identify all `raise` or `throw` statements and determine which input triggers them.\n2. Identify external calls (file, network, parsing) wrapped in `try/except`.\n3. Generate tests providing inputs that trigger each explicit exception clause.\n4. Verify both the exception type and the descriptive error message.",
+      "summary": "Key rules and actionable heuristics for Exception Testing (Fault Injection and Error Propagation) test case generation.",
+      "tags": [
+        "injection",
+        "and",
+        "error",
+        "testing",
+        "fault",
+        "propagation",
+        "exception",
+        "rules",
+        "heuristics",
+        "guidance"
+      ],
+      "id": 11
+    },
+    {
+      "file_name": "functional_testing.txt",
+      "topic": "Functional Testing",
+      "chunk_type": "full_overview",
+      "content": "Concept Name: Functional Testing\n\nDefinition:\nFunctional testing is a black-box and white-box testing technique that verifies that software features, functions, and business logic operate strictly according to their specified functional requirements and intended output specifications. It focuses on validating input-output relationships without assuming internal flaws, ensuring every function delivers the expected business outcome under proper usage.\n\nWhen to Use It:\n- When validating that core business calculations, data transformations, or logic workflows execute as required.\n- Whenever a module or function provides an observable return value, state change, or output based on specific parameters.\n- As the baseline foundation before applying specialized negative, boundary, or security testing.\n\nImportant Rules:\n1. Every primary function path must have at least one test case verifying correct end-to-end processing.\n2. The expected result must be explicitly predetermined based on business rules or arithmetic specifications.\n3. Test preconditions must ensure all dependent variables or configurations are correctly initialized.\n4. Functional test cases must evaluate normal, expected real-world data and user inputs.\n\nExamples:\nA discount calculator receiving valid price = 100 and discount = 10 must return final price = 90.\nAn authentication helper receiving valid username and password returns a valid session token.\nA string formatter receiving \"john doe\" and capitalize=True returns \"John Doe\".\n\nExample Test Cases:\n- ID: TC_FUNC_001\n  Function: calculate_discount\n  Title: Verify standard discount calculation on regular price\n  Test Type: Functional\n  Input: {\"price\": 100.0, \"discount\": 15.0}\n  Preconditions: Function is loaded and parameters are numeric\n  Steps: [\"Pass price=100.0 and discount=15.0 to calculate_discount\", \"Capture the returned float\"]\n  Expected Result: 85.0\n  Priority: High\n  Severity: High\n  Reason: Validates the fundamental business requirement of applying a percentage markdown.\n\n- ID: TC_FUNC_002\n  Function: get_user_status\n  Title: Verify active status returned for active accounts\n  Test Type: Functional\n  Input: {\"is_active\": True, \"balance\": 50}\n  Preconditions: User object is initialized\n  Steps: [\"Call get_user_status with is_active=True and positive balance\"]\n  Expected Result: \"Active\"\n  Priority: Medium\n  Severity: Medium\n  Reason: Confirms proper state mapping under normal operation.\n\nGuidance for Generating Test Cases:\n1. Examine function signatures, input parameters, and mathematical or data transformations.\n2. Formulate test cases that simulate typical valid end-user operations.\n3. Assert that the returned data matches the expected formula or business rule.\n4. Ensure priority is set to High for core business logic functions.",
+      "summary": "Functional testing is a black-box and white-box testing technique that verifies that software features, functions, and business logic operate strictly according to their specified functional requirements and intended output specifications. It focuses on validating input-output relationships without assuming internal flaws, ensuring every function delivers the expected business outcome under proper usage.",
+      "tags": [
+        "functional",
+        "testing"
+      ],
+      "id": 12
+    },
+    {
+      "file_name": "functional_testing.txt",
+      "topic": "Functional Testing (Generation Rules)",
+      "chunk_type": "guidance",
+      "content": "Topic: Functional Testing\n\nGuidance for Generating Test Cases:\n1. Examine function signatures, input parameters, and mathematical or data transformations.\n2. Formulate test cases that simulate typical valid end-user operations.\n3. Assert that the returned data matches the expected formula or business rule.\n4. Ensure priority is set to High for core business logic functions.",
+      "summary": "Key rules and actionable heuristics for Functional Testing test case generation.",
+      "tags": [
+        "functional",
+        "testing",
+        "rules",
+        "heuristics",
+        "guidance"
+      ],
+      "id": 13
+    },
+    {
+      "file_name": "loop_testing.txt",
+      "topic": "Loop Testing (Repetition and Iteration Verification)",
+      "chunk_type": "full_overview",
+      "content": "Concept Name: Loop Testing (Repetition and Iteration Verification)\n\nDefinition:\nLoop testing is a white-box testing technique that exclusively focuses on the validity of loop constructs (`for`, `while`, `do-while`, nested loops, list comprehensions). It is designed to uncover defects involving loop boundary conditions, improper initialization, off-by-one errors during termination, infinite loops, and state corruption across multiple iterations.\n\nWhen to Use It:\n- Whenever source code contains iteration statements (`for`, `while`, recursion).\n- When processing sequences, arrays, dictionaries, linked structures, or paginated datasets.\n- To detect performance degradation, memory leaks, or unreleased variables within repeated execution.\n\nImportant Rules:\n1. For simple loops with N maximum iterations, test:\n   a. Skip the loop entirely (0 iterations).\n   b. Exactly one pass through the loop (1 iteration).\n   c. Two passes through the loop (2 iterations).\n   d. A typical number of iterations (m iterations where 2 < m < n - 1).\n   e. (n - 1), n, and (n + 1) iterations.\n2. For nested loops: test the innermost loop first with outer loops held at minimum values, then work outwards.\n3. For while loops: test termination conditions to ensure no possibility of an infinite loop.\n4. Verify that accumulator variables are initialized before loop entry and updated correctly inside.\n\nExamples:\n- Summing an array of prices:\n  Test with empty array `[]` (0 iterations).\n  Test with single item `[50]` (1 iteration).\n  Test with multiple items `[10, 20, 30]` (multiple iterations).\n- Searching a string in a while loop until EOF or character match.\n\nExample Test Cases:\n- ID: TC_LOOP_001\n  Function: sum_items\n  Title: Zero iterations - empty input list\n  Test Type: Functional\n  Input: {\"items\": []}\n  Preconditions: Loop construct receives empty iterable\n  Steps: [\"Call sum_items([])\", \"Verify loop body is bypassed\"]\n  Expected Result: 0\n  Priority: High\n  Severity: Medium\n  Reason: Verifies loop behavior when iteration count is zero.\n\n- ID: TC_LOOP_002\n  Function: sum_items\n  Title: Single iteration - list with one element\n  Test Type: Functional\n  Input: {\"items\": [42]}\n  Preconditions: Loop construct receives single item iterable\n  Steps: [\"Call sum_items([42])\", \"Verify accumulator state\"]\n  Expected Result: 42\n  Priority: Medium\n  Severity: Low\n  Reason: Verifies that a single iteration accurately executes without off-by-one faults.\n\n- ID: TC_LOOP_003\n  Function: find_first_negative\n  Title: Multi-iteration loop with early break condition\n  Test Type: Functional\n  Input: {\"numbers\": [1, 3, 5, -2, 8]}\n  Preconditions: Loop terminates early upon finding negative number\n  Steps: [\"Call find_first_negative([1, 3, 5, -2, 8])\"]\n  Expected Result: -2\n  Priority: High\n  Severity: Medium\n  Reason: Verifies that loop termination logic and break statement work correctly mid-iteration.\n\nGuidance for Generating Test Cases:\n1. Inspect AST for `For`, `While`, and generator/comprehension expressions.\n2. Design test inputs that evaluate 0 iterations, 1 iteration, typical iterations, and maximum iterations.\n3. Test break, continue, and loop termination boolean expressions.",
+      "summary": "Loop testing is a white-box testing technique that exclusively focuses on the validity of loop constructs (`for`, `while`, `do-while`, nested loops, list comprehensions). It is designed to uncover defects involving loop boundary conditions, improper initialization, off-by-one errors during termination, infinite loops, and state corruption across multiple iterations.",
+      "tags": [
+        "and",
+        "iteration",
+        "loop",
+        "verification",
+        "testing",
+        "repetition"
+      ],
+      "id": 14
+    },
+    {
+      "file_name": "loop_testing.txt",
+      "topic": "Loop Testing (Repetition and Iteration Verification) (Generation Rules)",
+      "chunk_type": "guidance",
+      "content": "Topic: Loop Testing (Repetition and Iteration Verification)\n\nGuidance for Generating Test Cases:\n1. Inspect AST for `For`, `While`, and generator/comprehension expressions.\n2. Design test inputs that evaluate 0 iterations, 1 iteration, typical iterations, and maximum iterations.\n3. Test break, continue, and loop termination boolean expressions.",
+      "summary": "Key rules and actionable heuristics for Loop Testing (Repetition and Iteration Verification) test case generation.",
+      "tags": [
+        "and",
+        "iteration",
+        "loop",
+        "verification",
+        "testing",
+        "repetition",
+        "rules",
+        "heuristics",
+        "guidance"
+      ],
+      "id": 15
+    },
+    {
+      "file_name": "negative_testing.txt",
+      "topic": "Negative Testing (Unhappy Path & Error Handling)",
+      "chunk_type": "full_overview",
+      "content": "Concept Name: Negative Testing (Unhappy Path & Error Handling)\n\nDefinition:\nNegative testing evaluates how a software system behaves when subjected to invalid, unexpected, out-of-range, or malicious inputs. Its purpose is to guarantee that the system handles anomalies gracefully without crashing, leaking sensitive stack traces, freezing, or executing unauthorized operations, by returning clear and controlled error indicators.\n\nWhen to Use It:\n- For every condition that guards against invalid arguments or inappropriate states.\n- When validating input validation routines, guard clauses, and parameter sanitizers.\n- To ensure robust error handling and avoid silent data corruption.\n\nImportant Rules:\n1. Inputs must purposefully violate at least one validation rule or constraint.\n2. The system should NOT crash or throw unhandled exceptions (such as ZeroDivisionError, TypeError, or NullPointerException).\n3. The system must return an explicit error code, error message, or throw a planned custom exception.\n4. Each negative test case should isolate a single invalid condition to pinpoint failure causes.\n\nExamples:\n- Supplying a negative price (-50) to calculate_discount().\n- Providing discount percentage greater than 100 (e.g. 150) or below 0 (e.g. -10).\n- Submitting an alphanumeric string where an integer is expected.\n\nExample Test Cases:\n- ID: TC_NEG_001\n  Function: calculate_discount\n  Title: Reject negative price input\n  Test Type: Negative\n  Input: {\"price\": -50.0, \"discount\": 10.0}\n  Preconditions: Guard clause checking price < 0 is present\n  Steps: [\"Invoke calculate_discount(-50.0, 10.0)\", \"Check return value or raised exception\"]\n  Expected Result: \"Invalid price\"\n  Priority: High\n  Severity: High\n  Reason: Ensures financial calculation rejects nonsensical negative monetary values.\n\n- ID: TC_NEG_002\n  Function: calculate_discount\n  Title: Reject discount value exceeding upper bound of 100%\n  Test Type: Negative\n  Input: {\"price\": 100.0, \"discount\": 120.0}\n  Preconditions: Guard clause checking discount > 100 is present\n  Steps: [\"Invoke calculate_discount(100.0, 120.0)\"]\n  Expected Result: \"Invalid discount\"\n  Priority: High\n  Severity: High\n  Reason: Protects system against discounting more than 100% of price.\n\nGuidance for Generating Test Cases:\n1. Scan the source code for conditional expressions like `if x < 0`, `if len(s) == 0`, `if user is None`.\n2. Construct test cases specifically targeting each failure branch.\n3. Assert that the expected descriptive error string or error status is returned.\n4. Set severity based on impact (e.g. financial, authorization, or crash prevention).",
+      "summary": "Negative testing evaluates how a software system behaves when subjected to invalid, unexpected, out-of-range, or malicious inputs. Its purpose is to guarantee that the system handles anomalies gracefully without crashing, leaking sensitive stack traces, freezing, or executing unauthorized operations, by returning clear and controlled error indicators.",
+      "tags": [
+        "handling",
+        "error",
+        "testing",
+        "negative",
+        "unhappy",
+        "path"
+      ],
+      "id": 16
+    },
+    {
+      "file_name": "negative_testing.txt",
+      "topic": "Negative Testing (Unhappy Path & Error Handling) (Generation Rules)",
+      "chunk_type": "guidance",
+      "content": "Topic: Negative Testing (Unhappy Path & Error Handling)\n\nGuidance for Generating Test Cases:\n1. Scan the source code for conditional expressions like `if x < 0`, `if len(s) == 0`, `if user is None`.\n2. Construct test cases specifically targeting each failure branch.\n3. Assert that the expected descriptive error string or error status is returned.\n4. Set severity based on impact (e.g. financial, authorization, or crash prevention).",
+      "summary": "Key rules and actionable heuristics for Negative Testing (Unhappy Path & Error Handling) test case generation.",
+      "tags": [
+        "handling",
+        "error",
+        "testing",
+        "negative",
+        "unhappy",
+        "path",
+        "rules",
+        "heuristics",
+        "guidance"
+      ],
+      "id": 17
+    },
+    {
+      "file_name": "positive_testing.txt",
+      "topic": "Positive Testing (Happy Path Testing)",
+      "chunk_type": "full_overview",
+      "content": "Concept Name: Positive Testing (Happy Path Testing)\n\nDefinition:\nPositive testing validates that the application functions correctly when provided with valid, well-formed, and within-range input data. Also known as \"Happy Path\" testing, its primary objective is to verify that under ideal operating conditions, the system processes transactions smoothly, transitions states accurately, and returns expected success responses without unhandled faults.\n\nWhen to Use It:\n- Every time a new function, endpoint, or algorithmic module is implemented.\n- To confirm standard usage workflows and foundational capabilities.\n- To establish baseline acceptance criteria for system readiness.\n\nImportant Rules:\n1. All inputs must adhere strictly to valid ranges, types, and domain specifications.\n2. The system must produce success status codes, correct computed values, or expected confirmation messages.\n3. No exceptions, errors, or defensive branches should be triggered in positive tests.\n4. Data formats, encodings, and types must reflect standard compliant usage.\n\nExamples:\n- Providing an integer age of 25 to a registration validator expecting age >= 18.\n- Passing price = 250.00 and discount = 20.0 to calculate_discount().\n- Uploading a valid .pdf file to a document processing function.\n\nExample Test Cases:\n- ID: TC_POS_001\n  Function: calculate_discount\n  Title: Successful discount application with valid typical values\n  Test Type: Positive\n  Input: {\"price\": 200, \"discount\": 20}\n  Preconditions: System is ready to accept numeric inputs\n  Steps: [\"Invoke calculate_discount(200, 20)\", \"Check return value\"]\n  Expected Result: 160.0\n  Priority: High\n  Severity: Medium\n  Reason: Verifies that legitimate inputs yield the expected discounted value.\n\n- ID: TC_POS_002\n  Function: validate_email\n  Title: Confirm acceptance of standard valid email address\n  Test Type: Positive\n  Input: {\"email\": \"user@example.com\"}\n  Preconditions: Regex parser initialized\n  Steps: [\"Call validate_email('user@example.com')\"]\n  Expected Result: True\n  Priority: High\n  Severity: Medium\n  Reason: Validates that conformant data passes input verification.\n\nGuidance for Generating Test Cases:\n1. Identify the input domains and types specified in the source code.\n2. Choose values comfortably within valid operating bounds (e.g. median values).\n3. Verify that the primary return statement is reached and evaluated.\n4. Include positive cases for each distinct valid logical pathway.",
+      "summary": "Positive testing validates that the application functions correctly when provided with valid, well-formed, and within-range input data. Also known as \"Happy Path\" testing, its primary objective is to verify that under ideal operating conditions, the system processes transactions smoothly, transitions states accurately, and returns expected success responses without unhandled faults.",
+      "tags": [
+        "happy",
+        "positive",
+        "path",
+        "testing"
+      ],
+      "id": 18
+    },
+    {
+      "file_name": "positive_testing.txt",
+      "topic": "Positive Testing (Happy Path Testing) (Generation Rules)",
+      "chunk_type": "guidance",
+      "content": "Topic: Positive Testing (Happy Path Testing)\n\nGuidance for Generating Test Cases:\n1. Identify the input domains and types specified in the source code.\n2. Choose values comfortably within valid operating bounds (e.g. median values).\n3. Verify that the primary return statement is reached and evaluated.\n4. Include positive cases for each distinct valid logical pathway.",
+      "summary": "Key rules and actionable heuristics for Positive Testing (Happy Path Testing) test case generation.",
+      "tags": [
+        "happy",
+        "positive",
+        "path",
+        "testing",
+        "rules",
+        "heuristics",
+        "guidance"
+      ],
+      "id": 19
+    },
+    {
+      "file_name": "security_testing.txt",
+      "topic": "Defensive Security Testing and Secure Coding Verification",
+      "chunk_type": "full_overview",
+      "content": "Concept Name: Defensive Security Testing and Secure Coding Verification\n\nDefinition:\nDefensive security testing evaluates software components to ensure they uphold core security principles including confidentiality, integrity, availability, authentication, and authorization. It verifies that inputs are properly sanitized and validated, sensitive credentials or data are protected against exposure, error messages do not leak system internals, and resource consumption is bounded against denial-of-service.\n\nWhen to Use It:\n- Whenever functions accept untrusted external data (strings, files, network payloads, user tokens).\n- In authentication, authorization, access control, password verification, or session management routines.\n- In database queries, file system access, shell execution, or cryptographic implementations.\n\nImportant Rules:\n1. All user-supplied inputs must undergo strict type, length, character set, and range validation before processing.\n2. Defensive tests must verify that invalid format injections (e.g. quote characters, format specifiers, path traversal tokens like `../`) are rejected or safely escaped.\n3. Verify that secret keys, passwords, and authorization tokens cannot be accessed or reflected in outputs.\n4. Error responses must present generic, safe messages rather than verbose raw stack traces, database errors, or system paths.\n5. Defensive security testing must ONLY evaluate defensive safeguards; never include harmful exploitation payloads.\n\nExamples:\n- Verifying that a file loader strictly checks and rejects paths containing `../` to prevent directory traversal.\n- Checking that a user authentication method returns identical timing and messages for non-existent users and incorrect passwords to prevent user enumeration.\n- Ensuring input size limits prevent memory exhaustion.\n\nExample Test Cases:\n- ID: TC_SEC_001\n  Function: sanitize_username\n  Title: Defensive check: Reject strings containing path traversal sequences\n  Test Type: Security\n  Input: {\"username\": \"../../etc/shadow\"}\n  Preconditions: Username validation pattern enforced\n  Steps: [\"Call sanitize_username('../../etc/shadow')\", \"Check validation decision\"]\n  Expected Result: \"Validation Error: Disallowed characters or path sequence detected\"\n  Priority: High\n  Severity: Critical\n  Reason: Confirms defensive input validation prevents directory traversal attempts.\n\n- ID: TC_SEC_002\n  Function: verify_token\n  Title: Defensive check: Reject expired or malformed security token\n  Test Type: Security\n  Input: {\"token\": \"expired_or_tampered_payload\"}\n  Preconditions: Token signature verification enabled\n  Steps: [\"Call verify_token('expired_or_tampered_payload')\"]\n  Expected Result: False or UnauthorizedException\n  Priority: High\n  Severity: High\n  Reason: Asserts that invalid cryptographic or authentication tokens are cleanly denied.\n\nGuidance for Generating Test Cases:\n1. Examine code for security-sensitive markers: `auth`, `token`, `password`, `key`, `file`, `path`, `sql`, `query`, `admin`, `role`.\n2. Construct defensive verification tests testing empty tokens, malformed strings, length overflows, and unauthorized role requests.\n3. Assert that access is denied securely and that exceptions or errors are sanitized.",
+      "summary": "Defensive security testing evaluates software components to ensure they uphold core security principles including confidentiality, integrity, availability, authentication, and authorization. It verifies that inputs are properly sanitized and validated, sensitive credentials or data are protected against exposure, error messages do not leak system internals, and resource consumption is bounded against denial-of-service.",
+      "tags": [
+        "defensive",
+        "coding",
+        "and",
+        "security",
+        "secure",
+        "verification",
+        "testing"
+      ],
+      "id": 20
+    },
+    {
+      "file_name": "security_testing.txt",
+      "topic": "Defensive Security Testing and Secure Coding Verification (Generation Rules)",
+      "chunk_type": "guidance",
+      "content": "Topic: Defensive Security Testing and Secure Coding Verification\n\nGuidance for Generating Test Cases:\n1. Examine code for security-sensitive markers: `auth`, `token`, `password`, `key`, `file`, `path`, `sql`, `query`, `admin`, `role`.\n2. Construct defensive verification tests testing empty tokens, malformed strings, length overflows, and unauthorized role requests.\n3. Assert that access is denied securely and that exceptions or errors are sanitized.",
+      "summary": "Key rules and actionable heuristics for Defensive Security Testing and Secure Coding Verification test case generation.",
+      "tags": [
+        "defensive",
+        "coding",
+        "and",
+        "security",
+        "secure",
+        "verification",
+        "testing",
+        "rules",
+        "heuristics",
+        "guidance"
+      ],
+      "id": 21
+    },
+    {
+      "file_name": "state_transition_testing.txt",
+      "topic": "State Transition Testing",
+      "chunk_type": "full_overview",
+      "content": "Concept Name: State Transition Testing\n\nDefinition:\nState Transition Testing is a technique based on state machine theory that verifies whether a software system transitions correctly from one operational state to another in response to specific events, triggers, or method calls. It ensures that valid transitions occur as designed, and that invalid transitions from a given state are strictly forbidden or rejected.\n\nWhen to Use It:\n- When the code manages an entity with a lifecycle (e.g. Order: PENDING -> PAID -> SHIPPED -> DELIVERED -> CANCELLED).\n- When methods alter internal state flags (`self.status`, `is_authenticated`, `connection_state`).\n- In session management, finite state machines, multi-step wizards, or transaction processors.\n\nImportant Rules:\n1. Identify all possible system states, triggers/events, and resulting states.\n2. Test all valid transitions between states.\n3. Test invalid transition attempts (e.g. attempting to cancel an order that has already been delivered).\n4. Verify that state invariants and post-conditions hold after each transition.\n\nExamples:\n- E-commerce cart: EMPTY -> ITEM_ADDED -> CHECKOUT_STARTED -> PAYMENT_PROCESSED -> COMPLETED.\n- Database connection pool: DISCONNECTED -> CONNECTING -> CONNECTED -> IDLE -> CLOSED.\n\nExample Test Cases:\n- ID: TC_ST_001\n  Function: transition_order_status\n  Title: Verify valid transition from PENDING to PROCESSING\n  Test Type: Functional\n  Input: {\"current_state\": \"PENDING\", \"action\": \"START_PROCESSING\"}\n  Preconditions: Order exists with status PENDING\n  Steps: [\"Call transition_order_status('PENDING', 'START_PROCESSING')\"]\n  Expected Result: \"PROCESSING\"\n  Priority: High\n  Severity: Medium\n  Reason: Validates standard forward lifecycle progression.\n\n- ID: TC_ST_002\n  Function: transition_order_status\n  Title: Disallow invalid transition from COMPLETED to PENDING\n  Test Type: Negative\n  Input: {\"current_state\": \"COMPLETED\", \"action\": \"REOPEN\"}\n  Preconditions: Order is in terminal COMPLETED state\n  Steps: [\"Call transition_order_status('COMPLETED', 'REOPEN')\"]\n  Expected Result: \"Invalid State Transition Error\"\n  Priority: High\n  Severity: High\n  Reason: Prevents unauthorized modification of terminal lifecycle states.\n\nGuidance for Generating Test Cases:\n1. Search code for state variables, enums, status strings, or lifecycle methods.\n2. Map out the directed graph of valid state transitions.\n3. Generate test cases for expected sequential transitions.\n4. Formulate negative test cases attempting out-of-sequence or illegal transitions.",
+      "summary": "State Transition Testing is a technique based on state machine theory that verifies whether a software system transitions correctly from one operational state to another in response to specific events, triggers, or method calls. It ensures that valid transitions occur as designed, and that invalid transitions from a given state are strictly forbidden or rejected.",
+      "tags": [
+        "state",
+        "testing",
+        "transition"
+      ],
+      "id": 22
+    },
+    {
+      "file_name": "state_transition_testing.txt",
+      "topic": "State Transition Testing (Generation Rules)",
+      "chunk_type": "guidance",
+      "content": "Topic: State Transition Testing\n\nGuidance for Generating Test Cases:\n1. Search code for state variables, enums, status strings, or lifecycle methods.\n2. Map out the directed graph of valid state transitions.\n3. Generate test cases for expected sequential transitions.\n4. Formulate negative test cases attempting out-of-sequence or illegal transitions.",
+      "summary": "Key rules and actionable heuristics for State Transition Testing test case generation.",
+      "tags": [
+        "state",
+        "testing",
+        "transition",
+        "rules",
+        "heuristics",
+        "guidance"
+      ],
+      "id": 23
+    },
+    {
+      "file_name": "unit_testing.txt",
+      "topic": "Unit Testing",
+      "chunk_type": "full_overview",
+      "content": "Concept Name: Unit Testing\n\nDefinition:\nUnit testing is the level of software testing where individual units or components of a software program (individual functions, methods, procedures, or classes) are tested in isolation from the rest of the application. It ensures that the smallest testable parts of the software perform their intended operations accurately, predictably, and independently of external dependencies.\n\nWhen to Use It:\n- For every individual function, method, helper, or mathematical routine in the codebase.\n- During test-driven development (TDD) or continuous integration (CI) pipelines.\n- To provide fast regression detection when refactoring or optimizing algorithms.\n\nImportant Rules:\n1. Each unit test must isolate the target unit; external systems (databases, APIs, filesystem) should be mocked or stubbed.\n2. Unit tests must be fast, deterministic, and repeatable in any order.\n3. Assertions should test single concerns per test case where possible.\n4. Both inputs and expected return values must be deterministic.\n\nExamples:\n- Testing `calculate_discount(100, 10)` returns `90`.\n- Testing a string sanitizer function `strip_tags(\"<p>hello</p>\")` returns `\"hello\"`.\n- Testing a math utility `clamp(val, min_val, max_val)`.\n\nExample Test Cases:\n- ID: TC_UNIT_001\n  Function: calculate_discount\n  Title: Isolated unit test for 10% discount on integer price\n  Test Type: Unit\n  Input: {\"price\": 100, \"discount\": 10}\n  Preconditions: Isolated invocation of calculate_discount\n  Steps: [\"Call calculate_discount(100, 10)\", \"Assert result == 90.0\"]\n  Expected Result: 90.0\n  Priority: High\n  Severity: Medium\n  Reason: Validates isolated logic unit in complete detachment from external state.\n\n- ID: TC_UNIT_002\n  Function: calculate_discount\n  Title: Isolated unit test for 50% discount on fractional price\n  Test Type: Unit\n  Input: {\"price\": 99.50, \"discount\": 50}\n  Preconditions: Floating point arithmetic precision support\n  Steps: [\"Call calculate_discount(99.50, 50)\", \"Assert abs(result - 49.75) < 0.001\"]\n  Expected Result: 49.75\n  Priority: High\n  Severity: Medium\n  Reason: Confirms accurate float arithmetic calculation in unit isolation.\n\nGuidance for Generating Test Cases:\n1. Break down the code into each standalone function or method.\n2. Define discrete test cases that pass concrete parameters and assert exact return values.\n3. Keep test setup minimal, focused solely on the function's inputs and outputs.",
+      "summary": "Unit testing is the level of software testing where individual units or components of a software program (individual functions, methods, procedures, or classes) are tested in isolation from the rest of the application. It ensures that the smallest testable parts of the software perform their intended operations accurately, predictably, and independently of external dependencies.",
+      "tags": [
+        "unit",
+        "testing"
+      ],
+      "id": 24
+    },
+    {
+      "file_name": "unit_testing.txt",
+      "topic": "Unit Testing (Generation Rules)",
+      "chunk_type": "guidance",
+      "content": "Topic: Unit Testing\n\nGuidance for Generating Test Cases:\n1. Break down the code into each standalone function or method.\n2. Define discrete test cases that pass concrete parameters and assert exact return values.\n3. Keep test setup minimal, focused solely on the function's inputs and outputs.",
+      "summary": "Key rules and actionable heuristics for Unit Testing test case generation.",
+      "tags": [
+        "unit",
+        "testing",
+        "rules",
+        "heuristics",
+        "guidance"
+      ],
+      "id": 25
+    }
+  ]
+}

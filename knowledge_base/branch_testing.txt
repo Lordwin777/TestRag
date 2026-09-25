@@ -1,0 +1,85 @@
+Concept Name: Branch and Condition Testing (White-Box Logic Coverage)
+
+Definition:
+Branch and Condition testing is a structural white-box testing technique designed to ensure that every decision point, conditional branch (`if`, `elif`, `else`, `switch`, ternary), and boolean sub-expression in the source code is evaluated to both `True` and `False` at least once during test execution. Achieving 100% branch coverage guarantees that no hidden code block or alternative execution path remains untested.
+
+When to Use It:
+- For any code containing control flow branches (`if`, `elif`, `else`, `switch/case`).
+- When compound boolean conditions exist (`and`, `or`, `not`).
+- To prevent dead code, unreachable logic branches, or untested error-handling fallbacks.
+
+Important Rules:
+1. Every decision point with two outcomes (True/False) requires at least two test cases to cover both branches.
+2. In compound conditions like `(A or B)`, individual operands must be tested to verify that each can independently influence the outcome.
+3. Fallback `else` clauses and default switch branches must be explicitly exercised.
+4. Early return statements inside guard conditions must be verified.
+
+Examples:
+Given:
+```python
+if price < 0:
+    return "Invalid price"
+if discount < 0 or discount > 100:
+    return "Invalid discount"
+return price - (price * discount / 100)
+```
+Branches:
+1. `price < 0` is True -> Branch 1 ("Invalid price")
+2. `price < 0` is False -> Continues to next condition
+3. `discount < 0` is True -> Branch 2 ("Invalid discount")
+4. `discount > 100` is True -> Branch 3 ("Invalid discount")
+5. Neither is True -> Branch 4 (Calculate discount and return final price)
+
+Example Test Cases:
+- ID: TC_BRANCH_001
+  Function: calculate_discount
+  Title: Exercise branch 1: price < 0 evaluates to True
+  Test Type: Branch/Logic
+  Input: {"price": -10.0, "discount": 20.0}
+  Preconditions: First conditional evaluation
+  Steps: ["Invoke calculate_discount with price = -10.0"]
+  Expected Result: "Invalid price"
+  Priority: High
+  Severity: High
+  Reason: Exercises the first decision branch where price < 0 evaluates to True.
+
+- ID: TC_BRANCH_002
+  Function: calculate_discount
+  Title: Exercise branch 2: discount < 0 evaluates to True
+  Test Type: Branch/Logic
+  Input: {"price": 100.0, "discount": -5.0}
+  Preconditions: price < 0 evaluates to False; discount < 0 evaluates to True
+  Steps: ["Invoke calculate_discount with price = 100.0, discount = -5.0"]
+  Expected Result: "Invalid discount"
+  Priority: High
+  Severity: High
+  Reason: Verifies the left disjunct of the compound boolean condition.
+
+- ID: TC_BRANCH_003
+  Function: calculate_discount
+  Title: Exercise branch 3: discount > 100 evaluates to True
+  Test Type: Branch/Logic
+  Input: {"price": 100.0, "discount": 105.0}
+  Preconditions: price < 0 is False; discount < 0 is False; discount > 100 is True
+  Steps: ["Invoke calculate_discount with price = 100.0, discount = 105.0"]
+  Expected Result: "Invalid discount"
+  Priority: High
+  Severity: High
+  Reason: Verifies the right disjunct of the compound condition.
+
+- ID: TC_BRANCH_004
+  Function: calculate_discount
+  Title: Exercise branch 4: all conditions evaluate to False (Normal exit path)
+  Test Type: Branch/Logic
+  Input: {"price": 100.0, "discount": 20.0}
+  Preconditions: All guard conditions evaluate to False
+  Steps: ["Invoke calculate_discount with valid parameters"]
+  Expected Result: 80.0
+  Priority: High
+  Severity: Medium
+  Reason: Reaches the primary computation path after passing all branch filters.
+
+Guidance for Generating Test Cases:
+1. Parse the AST to extract all `If`, `IfExp`, and boolean logic operators (`Or`, `And`).
+2. Construct one test case for each decision outcome (True and False).
+3. Ensure no unexecuted code blocks remain between the entry and exit points.

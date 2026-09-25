@@ -1,0 +1,51 @@
+Concept Name: Negative Testing (Unhappy Path & Error Handling)
+
+Definition:
+Negative testing evaluates how a software system behaves when subjected to invalid, unexpected, out-of-range, or malicious inputs. Its purpose is to guarantee that the system handles anomalies gracefully without crashing, leaking sensitive stack traces, freezing, or executing unauthorized operations, by returning clear and controlled error indicators.
+
+When to Use It:
+- For every condition that guards against invalid arguments or inappropriate states.
+- When validating input validation routines, guard clauses, and parameter sanitizers.
+- To ensure robust error handling and avoid silent data corruption.
+
+Important Rules:
+1. Inputs must purposefully violate at least one validation rule or constraint.
+2. The system should NOT crash or throw unhandled exceptions (such as ZeroDivisionError, TypeError, or NullPointerException).
+3. The system must return an explicit error code, error message, or throw a planned custom exception.
+4. Each negative test case should isolate a single invalid condition to pinpoint failure causes.
+
+Examples:
+- Supplying a negative price (-50) to calculate_discount().
+- Providing discount percentage greater than 100 (e.g. 150) or below 0 (e.g. -10).
+- Submitting an alphanumeric string where an integer is expected.
+
+Example Test Cases:
+- ID: TC_NEG_001
+  Function: calculate_discount
+  Title: Reject negative price input
+  Test Type: Negative
+  Input: {"price": -50.0, "discount": 10.0}
+  Preconditions: Guard clause checking price < 0 is present
+  Steps: ["Invoke calculate_discount(-50.0, 10.0)", "Check return value or raised exception"]
+  Expected Result: "Invalid price"
+  Priority: High
+  Severity: High
+  Reason: Ensures financial calculation rejects nonsensical negative monetary values.
+
+- ID: TC_NEG_002
+  Function: calculate_discount
+  Title: Reject discount value exceeding upper bound of 100%
+  Test Type: Negative
+  Input: {"price": 100.0, "discount": 120.0}
+  Preconditions: Guard clause checking discount > 100 is present
+  Steps: ["Invoke calculate_discount(100.0, 120.0)"]
+  Expected Result: "Invalid discount"
+  Priority: High
+  Severity: High
+  Reason: Protects system against discounting more than 100% of price.
+
+Guidance for Generating Test Cases:
+1. Scan the source code for conditional expressions like `if x < 0`, `if len(s) == 0`, `if user is None`.
+2. Construct test cases specifically targeting each failure branch.
+3. Assert that the expected descriptive error string or error status is returned.
+4. Set severity based on impact (e.g. financial, authorization, or crash prevention).

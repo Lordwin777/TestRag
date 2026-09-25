@@ -1,0 +1,55 @@
+Concept Name: Equivalence Partitioning (EP)
+
+Definition:
+Equivalence Partitioning (EP) is a software testing technique that divides the input domain of a program into finite partitions or classes of data from which test cases can be derived. The fundamental assumption is that all data values belonging to the same partition are treated identically by the program logic, so testing one representative value from each partition is equivalent to testing all values in that partition.
+
+When to Use It:
+- When the input data set is large or infinite, making exhaustive testing impossible.
+- Whenever input validation establishes valid ranges, enumerated categories, or invalid bands.
+- To reduce test case redundancy while maintaining high defect detection coverage.
+
+Important Rules:
+1. Identify all valid equivalence partitions (inputs the system should process successfully).
+2. Identify all invalid equivalence partitions (inputs the system should reject or handle as errors).
+3. Select at least one representative value from each valid partition.
+4. Select at least one representative value from each invalid partition.
+5. Do not combine multiple invalid partitions in a single test case; test them individually.
+
+Examples:
+For a function calculate_discount(price, discount):
+Partition 1 (Valid Price): price > 0 (e.g. 50.0, 100.0)
+Partition 2 (Invalid Price): price < 0 (e.g. -25.0)
+Partition 3 (Valid Discount): 0 <= discount <= 100 (e.g. 25.0)
+Partition 4 (Invalid Discount Low): discount < 0 (e.g. -15.0)
+Partition 5 (Invalid Discount High): discount > 100 (e.g. 150.0)
+
+Example Test Cases:
+- ID: TC_EP_001
+  Function: calculate_discount
+  Title: Test representative value from valid partition
+  Test Type: Functional
+  Input: {"price": 150.0, "discount": 25.0}
+  Preconditions: Valid price and valid discount partitions selected
+  Steps: ["Call calculate_discount(150.0, 25.0)"]
+  Expected Result: 112.5
+  Priority: High
+  Severity: Medium
+  Reason: Represents the valid equivalence class for both parameters.
+
+- ID: TC_EP_002
+  Function: calculate_discount
+  Title: Test representative value from invalid negative discount partition
+  Test Type: Negative
+  Input: {"price": 100.0, "discount": -30.0}
+  Preconditions: Negative discount partition isolated
+  Steps: ["Call calculate_discount(100.0, -30.0)"]
+  Expected Result: "Invalid discount"
+  Priority: High
+  Severity: High
+  Reason: Validates that any value in the discount < 0 partition triggers rejection.
+
+Guidance for Generating Test Cases:
+1. Examine conditionals and type definitions in the code.
+2. Group possible inputs into distinct mathematical or categorical classes.
+3. Pick one clear, representative value per class.
+4. Ensure each invalid partition is tested separately.

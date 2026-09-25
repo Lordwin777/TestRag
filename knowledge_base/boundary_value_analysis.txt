@@ -1,0 +1,66 @@
+Concept Name: Boundary Value Analysis (BVA)
+
+Definition:
+Boundary Value Analysis (BVA) is a black-box test design technique based on the empirical observation that defects are concentrated at the extreme edges or boundaries of input domains rather than in the center. BVA tests the minimum, just above minimum, nominal (typical), just below maximum, and maximum values, as well as values immediately outside the boundaries (off-by-one errors).
+
+When to Use It:
+- Whenever source code contains comparison operators: `<`, `<=`, `>`, `>=`, `==`, `!=`.
+- Whenever numerical ranges, list lengths, string lengths, or loop counters are constrained by thresholds.
+- When validating discounts, age restrictions, credit ratings, quantity ceilings, or page limits.
+
+Important Rules:
+1. For an interval [min, max], test: (min - 1), min, (min + 1), (max - 1), max, and (max + 1).
+2. Off-by-one errors (e.g. using `<` instead of `<=`) are discovered primarily through boundary values.
+3. Both valid boundaries and immediate invalid boundaries must be evaluated.
+4. Float boundaries should test precision limits where applicable (e.g. 0.0, 0.01, 99.99, 100.0).
+
+Examples:
+- If a function checks `if discount < 0 or discount > 100`:
+  Boundaries are 0 and 100.
+  Test values: -1 (invalid), 0 (valid edge), 1 (valid inside), 99 (valid inside), 100 (valid edge), 101 (invalid).
+- If checking `if age >= 18`:
+  Boundary is 18.
+  Test values: 17 (rejected), 18 (accepted), 19 (accepted).
+
+Example Test Cases:
+- ID: TC_BVA_001
+  Function: calculate_discount
+  Title: Verify discount at exact lower boundary 0%
+  Test Type: Boundary
+  Input: {"price": 100.0, "discount": 0.0}
+  Preconditions: Discount must allow 0% as valid
+  Steps: ["Call calculate_discount(100.0, 0.0)"]
+  Expected Result: 100.0
+  Priority: High
+  Severity: Medium
+  Reason: Validates the minimum valid percentage boundary without price alteration.
+
+- ID: TC_BVA_002
+  Function: calculate_discount
+  Title: Verify discount at exact upper boundary 100%
+  Test Type: Boundary
+  Input: {"price": 100.0, "discount": 100.0}
+  Preconditions: 100% discount must result in zero final price
+  Steps: ["Call calculate_discount(100.0, 100.0)"]
+  Expected Result: 0.0
+  Priority: High
+  Severity: Medium
+  Reason: Verifies 100% boundary calculation results in a free item.
+
+- ID: TC_BVA_003
+  Function: calculate_discount
+  Title: Verify discount just above maximum boundary (100.01%)
+  Test Type: Boundary
+  Input: {"price": 100.0, "discount": 100.01}
+  Preconditions: Discount constraint is 0 <= discount <= 100
+  Steps: ["Call calculate_discount(100.0, 100.01)"]
+  Expected Result: "Invalid discount"
+  Priority: High
+  Severity: High
+  Reason: Detects boundary violation just over the 100 threshold.
+
+Guidance for Generating Test Cases:
+1. Locate numerical comparisons in the source code (e.g. `< 0`, `> 100`, `>= 18`).
+2. Identify the boundary constants (e.g. 0, 100, 18).
+3. Generate test cases for exact boundary points, points just inside, and points just outside.
+4. Document expected boundary decisions in the reason field.

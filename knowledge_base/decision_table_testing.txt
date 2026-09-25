@@ -1,0 +1,52 @@
+Concept Name: Decision Table Testing
+
+Definition:
+Decision Table Testing (also known as Cause-Effect Table Testing) is a systematic technique used to capture and test complex business rules that depend on combinations of multiple input conditions and result in distinct actions or outcomes. It models combinations of boolean flags, thresholds, or options into a truth matrix ensuring that all condition permutations are accounted for.
+
+When to Use It:
+- When code contains compound boolean expressions: `if A and B:`, `if A or (B and C):`, nested `if/elif/else` blocks.
+- When business logic requires different outputs depending on multiple concurrent parameter states.
+- To discover missing logic branches or contradictory rule definitions in complex workflows.
+
+Important Rules:
+1. Every column in a decision table represents a unique rule (combination of conditions).
+2. For N binary conditions, there are up to 2^N possible permutations (or reduced permutations where conditions are mutually exclusive).
+3. Each distinct combination must produce a clearly defined expected action or result.
+4. Redundant or impossible combinations should be identified and pruned logically.
+
+Examples:
+Loan approval logic:
+Condition 1: Credit Score >= 700 (True/False)
+Condition 2: Income >= 50,000 (True/False)
+Condition 3: Existing Debt == 0 (True/False)
+Outcomes: Auto-Approve, Manual-Review, or Decline.
+
+Example Test Cases:
+- ID: TC_DT_001
+  Function: process_order
+  Title: Combination: In-stock item with verified user and valid payment
+  Test Type: Functional
+  Input: {"in_stock": True, "user_verified": True, "payment_valid": True}
+  Preconditions: Order processor initialized
+  Steps: ["Call process_order(in_stock=True, user_verified=True, payment_valid=True)"]
+  Expected Result: "Order Processed"
+  Priority: High
+  Severity: High
+  Reason: Verifies rule combination where all success predicates are met simultaneously.
+
+- ID: TC_DT_002
+  Function: process_order
+  Title: Combination: In-stock item with unverified user but valid payment
+  Test Type: Negative
+  Input: {"in_stock": True, "user_verified": False, "payment_valid": True}
+  Preconditions: Order processor initialized
+  Steps: ["Call process_order(in_stock=True, user_verified=False, payment_valid=True)"]
+  Expected Result: "Verification Required"
+  Priority: High
+  Severity: Medium
+  Reason: Verifies rule branch when user verification predicate fails.
+
+Guidance for Generating Test Cases:
+1. Identify all variables in compound boolean statements (`and`, `or`, nested `if`).
+2. Construct test cases covering combinations of (True, True), (True, False), (False, True), (False, False).
+3. Confirm that short-circuit evaluation logic executes safely without unintended side effects.
